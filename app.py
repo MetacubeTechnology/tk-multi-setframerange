@@ -78,7 +78,6 @@ class SetFrameRange(Application):
     ###############################################################################################
     # implementation
 
-
     def get_frame_range_from_shotgun(self):
         """
         Returns (in, out) frames from shotgun.
@@ -149,6 +148,13 @@ class SetFrameRange(Application):
             ticks = MaxPlus.Core.EvalMAXScript("ticksperframe").GetInt()
             current_in = MaxPlus.Animation.GetAnimRange().Start() / ticks
             current_out = MaxPlus.Animation.GetAnimRange().End() / ticks
+        elif engine == "tk-fusion":
+            import PeyeonScript
+            f_connection = PeyeonScript.scriptapp ("Fusion")
+            the_comp = f_connection.GetCurrentComp ()
+
+            current_in = the_comp.GetAttrs ('COMPN_RenderStart')
+            current_out = the_comp.GetAttrs ('COMPN_RenderEnd')
 
         else:
             raise tank.TankError("Don't know how to get current frame range for engine %s!" % engine)
@@ -221,6 +227,14 @@ class SetFrameRange(Application):
             ticks = MaxPlus.Core.EvalMAXScript("ticksperframe").GetInt()
             range = MaxPlus.Interval(in_frame * ticks, out_frame * ticks)
             MaxPlus.Animation.SetRange(range)
+        elif engine == "tk-fusion":
+            import PeyeonScript
+            f_connection = PeyeonScript.scriptapp ("Fusion")
+            the_comp = f_connection.GetCurrentComp ()
+            the_comp.SetAttrs ({'COMPN_GlobalEnd': out_frame})
+            the_comp.SetAttrs ({'COMPN_RenderEnd': out_frame})
+            the_comp.SetAttrs ({'COMPN_GlobalStart': in_frame})
+            the_comp.SetAttrs ({'COMPN_RenderStart': in_frame})
         
         else:
             raise tank.TankError("Don't know how to set current frame range for engine %s!" % engine)
